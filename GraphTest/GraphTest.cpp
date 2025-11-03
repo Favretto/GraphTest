@@ -42,6 +42,7 @@ WCHAR szTempPath[MAX_PATH];
 
 HWND hwnd = NULL;
 
+BOOL is64Bit();
 void SetAlwaysOnTop(HWND hwnd, BOOL enable);
 
 BOOL isTopMost = FALSE;
@@ -230,11 +231,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 CheckMenuItem(GetMenu(hwnd), IDM_ALWAYS_ON_TOP, MF_BYCOMMAND | MF_CHECKED);
 
             break;
-        case IDM_HELP_ABOUT:
-            MessageBox(hwnd, L"GraphTest v1.0 (x64) per Windows 10 e Windows 11\n\nRealizzato da Alessandro Favretto.\n\n\nApplicazione standalone realizzata in VC++ e WinAPI.",
-                L"Informazioni su GraphTest\n",
-                MB_OK | MB_ICONINFORMATION);
+        case IDM_HELP_ABOUT:{
+            if(is64Bit()){
+                MessageBox(hwnd, L"GraphTest v1.0 (x64) per Windows 10 e Windows 11\n\nRealizzato da Alessandro Favretto.\n\n\nApplicazione standalone realizzata in VC++ e WinAPI.",
+                    L"Informazioni su GraphTest\n",
+                    MB_OK | MB_ICONINFORMATION);
+            } else{
+                MessageBox(hwnd, L"GraphTest v1.0 (x86) per Windows 10 e Windows 11\n\nRealizzato da Alessandro Favretto.\n\n\nApplicazione standalone realizzata in VC++ e WinAPI.",
+                    L"Informazioni su GraphTest\n",
+                    MB_OK | MB_ICONINFORMATION);
+            }
+
             break;
+        }
         case IDM_OPEN_GUI:
             ShowWindow(hwnd, SW_SHOW);          // ripristina la finestra
             SetForegroundWindow(hwnd);
@@ -374,6 +383,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+BOOL is64Bit() {
+#if defined(_WIN64)
+    return TRUE;  // Processo a 64 bit
+#else
+    return FALSE; // Processo a 32 bit
+#endif
+}
+
 void SetAlwaysOnTop(HWND hwnd, BOOL enable)
 {
     SetWindowPos(
@@ -455,26 +472,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     int y = (screenHeight - 480) / 2;
 
     isAppRunningAsAdmin = IsRunningAsAdmin();
-    if(isAppRunningAsAdmin)
-        hwnd = CreateWindowEx(
-            0,
-            L"GraphTest",
-            L"GraphTest v.1.0 (x64) - {Administrator}",
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-            x, y,
-            640, 480,
-            NULL, NULL, hInstance, NULL
-        );
-    else
-        hwnd = CreateWindowEx(
-            0,
-            L"GraphTest",
-            L"GraphTest v.1.0 (x64)",
-            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-            x, y,
-            640, 480,
-            NULL, NULL, hInstance, NULL
-        );
+    
+    if (is64Bit()) {
+        if (isAppRunningAsAdmin)
+            hwnd = CreateWindowEx(
+                0,
+                L"GraphTest",
+                L"GraphTest v1.0 (x64) - {Administrator}",
+                WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                x, y,
+                640, 480,
+                NULL, NULL, hInstance, NULL
+            );
+        else
+            hwnd = CreateWindowEx(
+                0,
+                L"GraphTest",
+                L"GraphTest v1.0 (x64)",
+                WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                x, y,
+                640, 480,
+                NULL, NULL, hInstance, NULL
+            );
+    } else {
+        if (isAppRunningAsAdmin)
+            hwnd = CreateWindowEx(
+                0,
+                L"GraphTest",
+                L"GraphTest v1.0 (x86) - {Administrator}",
+                WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                x, y,
+                640, 480,
+                NULL, NULL, hInstance, NULL
+            );
+        else
+            hwnd = CreateWindowEx(
+                0,
+                L"GraphTest",
+                L"GraphTest v1.0 (x86)",
+                WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+                x, y,
+                640, 480,
+                NULL, NULL, hInstance, NULL
+            );
+    }
 
     // Aggiunto: inizializzazione struttura tray icon
     nid.cbSize = sizeof(NOTIFYICONDATA);
